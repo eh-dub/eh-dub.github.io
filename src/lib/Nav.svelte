@@ -1,7 +1,11 @@
+<script>
+	import Link from '$lib/Link.svelte';
+</script>
+
 <div>
 	<nav>
-		<a href="/"><h3 class="home">HOME</h3></a>
-		<a href="/about"><h3 class="about">about</h3></a>
+		<Link href="/"><h3 class="home">HOME</h3></Link>
+		<Link href="/about"><h3 class="about">about</h3></Link>
 	</nav>
 </div>
 
@@ -11,10 +15,7 @@
 		justify-content: space-between;
 		align-items: baseline;
 	}
-	a {
-		text-decoration: none;
-		color: inherit;
-	}
+
 	h3 {
 		margin-bottom: 0px;
 		&.home {

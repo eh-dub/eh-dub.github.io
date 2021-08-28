@@ -1,5 +1,5 @@
 import preprocess from 'svelte-preprocess';
-
+import adapter from '@sveltejs/adapter-static';
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	// Consult https://github.com/sveltejs/svelte-preprocess
@@ -7,8 +7,12 @@ const config = {
 	preprocess: preprocess(),
 
 	kit: {
+		adapter: adapter({}),
+		paths: {
+			base: '/eh-dub.github.io',
+		},
 		// hydrate the <div id="svelte"> element in src/app.html
-		target: '#svelte'
+		target: '#svelte',
 	}
 };
 
