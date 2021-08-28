@@ -1,10 +1,10 @@
-<script lang="typescript">
-	export let href: string;
-
-	const prodHref = `/eh-dub.github.io${href}`;
+<script lang="ts">
+	export let path: string;
+	import p from '$lib/paths';
+	const href = `${p}${path}`;
 </script>
 
-<a {href}><slot /></a>
+<a {href}><slot>{href}</slot></a>
 
 <style>
 	a {

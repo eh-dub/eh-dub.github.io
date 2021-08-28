@@ -7,9 +7,11 @@ const config = {
 	preprocess: preprocess(),
 
 	kit: {
-		adapter: adapter({}),
+		adapter: adapter(),
 		paths: {
 			base: '/eh-dub.github.io',
+			assets: '/eh-dub.github.io',
+			
 		},
 		// hydrate the <div id="svelte"> element in src/app.html
 		target: '#svelte',
