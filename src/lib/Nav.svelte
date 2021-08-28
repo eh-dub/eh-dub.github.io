@@ -4,8 +4,8 @@
 
 <div>
 	<nav>
-		<Link href="/"><h3 class="home">HOME</h3></Link>
-		<Link href="/about"><h3 class="about">about</h3></Link>
+		<Link path="/"><h3 class="home">HOME</h3></Link>
+		<Link path="/about"><h3 class="about">about</h3></Link>
 	</nav>
 </div>
 
