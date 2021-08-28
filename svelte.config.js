@@ -8,10 +8,7 @@ const config = {
 
 	kit: {
 		adapter: adapter(),
-		paths: {
-			base: '/eh-dub.github.io',
-			assets: '/eh-dub.github.io',
-			
+		paths: {			
 		},
 		// hydrate the <div id="svelte"> element in src/app.html
 		target: '#svelte',
