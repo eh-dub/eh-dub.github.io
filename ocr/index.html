@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="favicon.png" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Digital Eyeballs; Using Optical Character Recognition on Video Games</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.1/styles/github.min.css" data-svelte="svelte-g8sci9"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Overpass" data-svelte="svelte-g8sci9"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Mono" data-svelte="svelte-g8sci9">
+
+		
+
+		<link rel="modulepreload" href="/./_app/start-622f6499.js">
+		<link rel="modulepreload" href="/./_app/chunks/vendor-f2af8285.js">
+		<link rel="modulepreload" href="/./_app/chunks/paths-45dac81d.js">
+		<link rel="modulepreload" href="/./_app/pages/__layout.svelte-40c8b40c.js">
+		<link rel="modulepreload" href="/./_app/pages/[slug].svelte-34d824a3.js">
+		<link rel="stylesheet" href="/./_app/assets/start-61d1577b.css">
+		<link rel="stylesheet" href="/./_app/assets/pages/__layout.svelte-2db7ec94.css">
+		<link rel="stylesheet" href="/./_app/assets/pages/[slug].svelte-ab5c8046.css">
+
+		<script type="module">
+			import { start } from "/./_app/start-622f6499.js";
+			start({
+				target: document.querySelector("#svelte"),
+				paths: {"base":"","assets":"/."},
+				session: {},
+				host: location.host,
+				route: true,
+				spa: false,
+				trailing_slash: "never",
+				hydrate: {
+					status: 200,
+					error: null,
+					nodes: [
+						import("/./_app/pages/__layout.svelte-40c8b40c.js"),
+						import("/./_app/pages/[slug].svelte-34d824a3.js")
+					],
+					page: {
+						host: location.host, // TODO this is redundant
+						path: "/ocr",
+						query: new URLSearchParams(""),
+						params: {"slug":"ocr"}
+					}
+				}
+			});
+		</script>
+	</head>
+	<body>
+		<div id="svelte">
+
+
+
+
+<div class="g-app-wrapper svelte-1b6ygo1"><div><nav class="svelte-1wyi25t"><a href="/" class="svelte-1wyi25t"><h3 class="home svelte-1wyi25t">HOME</h3></a>
+<a href="/about" class="svelte-1wyi25t"><h3 class="about svelte-1wyi25t">about</h3></a></nav>
+</div>
+	
+
+<h1 class="title svelte-1mgzh8t">Digital Eyeballs; Using Optical Character Recognition on Video Games</h1>
+<p class="info"><a href="https://github.com/eh-dub">eh-dub</a> AUG 29, 2021</p>
+<!-- HTML_TAG_START --><p>Given the proliferation of e-sports and Twitch streamers, I wonder if it would ever be useful to watch video games really fast. Like 12 hours in 12 seconds fast.</p>
+<h2>Let's Watch People Die</h2>
+<p>Call of Duty Warzone is one of the most popular games in the contemporary competitive scene. To win, you must kill. How might we watch every murder really fast?</p>
+<p><img src="posts/ocr/murder.png" alt="Twitch Streamer HusKers kills an opponent"></p>
+<p>Here we see Twitch Streamer HusKers finishing off an opponent. At the top-right of the screen is a kill counter. If we can read that number then we can extract every kill that HusKers makes. Here's a scaled up view of that kill counter just before HusKerrs makes that third kill.</p>
+<p><img src="posts/ocr/kill-count.png" alt="Close-up of the kill counter"></p>
+<p>Recognizing numbers is Machine Learning 101. Are we at a bar on a Friday night? 'cuz we about to get dem digits.</p>
+<h3>Step one: determine a bounding box for the region of interest</h3>
+<p>My preferred method is to overlay a grid and count the boxes. <a href="https://replit.com/@ehdub/Draw-a-grid-over-an-image?lite=true">Here's a working example</a>.</p>
+<p><img src="posts/ocr/grid.png" alt="Grid overlay of the murder"></p>
+<p>These boxes are 20 pixels by 20 pixels. The source image is 1280x720 (<strong>i.e.</strong> 720p). Counting the squares we see that the digits are contained in the space (1212,30,1247,50).
+I did not get these numbers from the grid alone. The grid provides a starting point and after a few iterations you will discover a tight crop. The extra space is for double-digit numbers.</p>
+<h3>Step two: use bounding box to crop region of interest from video frames</h3>
+<p><a href="https://pypi.org/project/av/">PyAV</a> is not the most inuitive library for video processing, but it is by far the fastest Python wrapper for FFmpeg that I've used. <a href="https://replit.com/@ehdub/Extract-ROIS-from-Video">Here</a> is a live demo of how to use it to crop out the region of interest from the frames of a video.</p>
+<h3>Step three: configure a digital eyeball to perceive the digits</h3>
+<p><a href="https://tesseract-ocr.github.io">Tesseract</a> is an open source "optical character recognizer". I think "digital eyeball" is a more intuitive name. I do not yet know how to build a REPL that runs Tesseract so <a href="https://github.com/eh-dub/tesseract-demo">here is a GitHub repo</a> you can clone. Tesseract is invoked in the <code>run_ocr.sh</code> script. The command is presented on its own below:</p>
+<pre><code class="hljs language-apache"><span class="hljs-attribute">tesseract</span> imgs.txt results --dpi <span class="hljs-number">70</span> --psm <span class="hljs-number">7</span> -c tessedit_char_whitelist=<span class="hljs-number">0123456789</span> tsv
+</code></pre>
+<ul>
+<li><code>imgs.txt</code> is a newline-separated-list of image filenames for tesseract to process.</li>
+<li><code>results</code> is the name of the results file</li>
+<li><code>--dpi 70</code> tells tesseract how many dots per inch the images are. DPI is relevant only for scanned images, but tesseract complains if you don't set this argument. 70 is tesseract's default when a DPI is not provided.</li>
+<li><code>--psm 7</code> refers to the "page segmentation method" <em>i.e.</em> how is the text laid out on the image. 7 is "Treat the image as a single text line." <a href="https://tesseract-ocr.github.io/tessdoc/ImproveQuality.html#page-segmentation-method">Read more here</a>.</li>
+<li><code>-c tessedit_char_whitelist=0123456789</code> defines the character set that can be recognized.</li>
+<li><code>tsv</code> report results as tab-seperated values</li>
+</ul>
+<p>The results reporting is the least user-friendly aspect of tesseract. At least in this example, images where characters are recognized have 5 result lines and images where characters are not recognized have 1 result line. Of the 5 result lines, just one contains the actual character recognized. I chose <code>tsv</code> for this demo because it at least includes no-recognition results. The default <code>txt</code> results reporting includes only recognitions so it is impossible to know which recognitions correspond to which inputs.</p>
+<h3>Putting it all together is the hard part</h3>
+<p>I have demonstrated transformations from video to cropped frames to recognized digits. In a future post I will demonstrate how to program against this event stream to pull out events of interest.</p><!-- HTML_TAG_END -->
+</div>
+
+
+
+	<script type="application/json" data-type="svelte-data" data-url="/ocr.json">{"status":200,"statusText":"","headers":{"content-type":"text/plain;charset=UTF-8"},"body":"{\"metadata\":{\"title\":\"Digital Eyeballs; Using Optical Character Recognition on Video Games\",\"date\":\"Aug 29, 2021\",\"excerpt\":\"A practical guide to extracting information from video game streams.\"},\"content\":\"\u003Cp\u003EGiven the proliferation of e-sports and Twitch streamers, I wonder if it would ever be useful to watch video games really fast. Like 12 hours in 12 seconds fast.\u003C\u002Fp\u003E\\n\u003Ch2\u003ELet's Watch People Die\u003C\u002Fh2\u003E\\n\u003Cp\u003ECall of Duty Warzone is one of the most popular games in the contemporary competitive scene. To win, you must kill. How might we watch every murder really fast?\u003C\u002Fp\u003E\\n\u003Cp\u003E\u003Cimg src=\\\"posts\u002Focr\u002Fmurder.png\\\" alt=\\\"Twitch Streamer HusKers kills an opponent\\\"\u003E\u003C\u002Fp\u003E\\n\u003Cp\u003EHere we see Twitch Streamer HusKers finishing off an opponent. At the top-right of the screen is a kill counter. If we can read that number then we can extract every kill that HusKers makes. Here's a scaled up view of that kill counter just before HusKerrs makes that third kill.\u003C\u002Fp\u003E\\n\u003Cp\u003E\u003Cimg src=\\\"posts\u002Focr\u002Fkill-count.png\\\" alt=\\\"Close-up of the kill counter\\\"\u003E\u003C\u002Fp\u003E\\n\u003Cp\u003ERecognizing numbers is Machine Learning 101. Are we at a bar on a Friday night? 'cuz we about to get dem digits.\u003C\u002Fp\u003E\\n\u003Ch3\u003EStep one: determine a bounding box for the region of interest\u003C\u002Fh3\u003E\\n\u003Cp\u003EMy preferred method is to overlay a grid and count the boxes. \u003Ca href=\\\"https:\u002F\u002Freplit.com\u002F@ehdub\u002FDraw-a-grid-over-an-image?lite=true\\\"\u003EHere's a working example\u003C\u002Fa\u003E.\u003C\u002Fp\u003E\\n\u003Cp\u003E\u003Cimg src=\\\"posts\u002Focr\u002Fgrid.png\\\" alt=\\\"Grid overlay of the murder\\\"\u003E\u003C\u002Fp\u003E\\n\u003Cp\u003EThese boxes are 20 pixels by 20 pixels. The source image is 1280x720 (\u003Cstrong\u003Ei.e.\u003C\u002Fstrong\u003E 720p). Counting the squares we see that the digits are contained in the space (1212,30,1247,50).\\nI did not get these numbers from the grid alone. The grid provides a starting point and after a few iterations you will discover a tight crop. The extra space is for double-digit numbers.\u003C\u002Fp\u003E\\n\u003Ch3\u003EStep two: use bounding box to crop region of interest from video frames\u003C\u002Fh3\u003E\\n\u003Cp\u003E\u003Ca href=\\\"https:\u002F\u002Fpypi.org\u002Fproject\u002Fav\u002F\\\"\u003EPyAV\u003C\u002Fa\u003E is not the most inuitive library for video processing, but it is by far the fastest Python wrapper for FFmpeg that I've used. \u003Ca href=\\\"https:\u002F\u002Freplit.com\u002F@ehdub\u002FExtract-ROIS-from-Video\\\"\u003EHere\u003C\u002Fa\u003E is a live demo of how to use it to crop out the region of interest from the frames of a video.\u003C\u002Fp\u003E\\n\u003Ch3\u003EStep three: configure a digital eyeball to perceive the digits\u003C\u002Fh3\u003E\\n\u003Cp\u003E\u003Ca href=\\\"https:\u002F\u002Ftesseract-ocr.github.io\\\"\u003ETesseract\u003C\u002Fa\u003E is an open source \\\"optical character recognizer\\\". I think \\\"digital eyeball\\\" is a more intuitive name. I do not yet know how to build a REPL that runs Tesseract so \u003Ca href=\\\"https:\u002F\u002Fgithub.com\u002Feh-dub\u002Ftesseract-demo\\\"\u003Ehere is a GitHub repo\u003C\u002Fa\u003E you can clone. Tesseract is invoked in the \u003Ccode\u003Erun_ocr.sh\u003C\u002Fcode\u003E script. The command is presented on its own below:\u003C\u002Fp\u003E\\n\u003Cpre\u003E\u003Ccode class=\\\"hljs language-apache\\\"\u003E\u003Cspan class=\\\"hljs-attribute\\\"\u003Etesseract\u003C\u002Fspan\u003E imgs.txt results --dpi \u003Cspan class=\\\"hljs-number\\\"\u003E70\u003C\u002Fspan\u003E --psm \u003Cspan class=\\\"hljs-number\\\"\u003E7\u003C\u002Fspan\u003E -c tessedit_char_whitelist=\u003Cspan class=\\\"hljs-number\\\"\u003E0123456789\u003C\u002Fspan\u003E tsv\\n\u003C\u002Fcode\u003E\u003C\u002Fpre\u003E\\n\u003Cul\u003E\\n\u003Cli\u003E\u003Ccode\u003Eimgs.txt\u003C\u002Fcode\u003E is a newline-separated-list of image filenames for tesseract to process.\u003C\u002Fli\u003E\\n\u003Cli\u003E\u003Ccode\u003Eresults\u003C\u002Fcode\u003E is the name of the results file\u003C\u002Fli\u003E\\n\u003Cli\u003E\u003Ccode\u003E--dpi 70\u003C\u002Fcode\u003E tells tesseract how many dots per inch the images are. DPI is relevant only for scanned images, but tesseract complains if you don't set this argument. 70 is tesseract's default when a DPI is not provided.\u003C\u002Fli\u003E\\n\u003Cli\u003E\u003Ccode\u003E--psm 7\u003C\u002Fcode\u003E refers to the \\\"page segmentation method\\\" \u003Cem\u003Ei.e.\u003C\u002Fem\u003E how is the text laid out on the image. 7 is \\\"Treat the image as a single text line.\\\" \u003Ca href=\\\"https:\u002F\u002Ftesseract-ocr.github.io\u002Ftessdoc\u002FImproveQuality.html#page-segmentation-method\\\"\u003ERead more here\u003C\u002Fa\u003E.\u003C\u002Fli\u003E\\n\u003Cli\u003E\u003Ccode\u003E-c tessedit_char_whitelist=0123456789\u003C\u002Fcode\u003E defines the character set that can be recognized.\u003C\u002Fli\u003E\\n\u003Cli\u003E\u003Ccode\u003Etsv\u003C\u002Fcode\u003E report results as tab-seperated values\u003C\u002Fli\u003E\\n\u003C\u002Ful\u003E\\n\u003Cp\u003EThe results reporting is the least user-friendly aspect of tesseract. At least in this example, images where characters are recognized have 5 result lines and images where characters are not recognized have 1 result line. Of the 5 result lines, just one contains the actual character recognized. I chose \u003Ccode\u003Etsv\u003C\u002Fcode\u003E for this demo because it at least includes no-recognition results. The default \u003Ccode\u003Etxt\u003C\u002Fcode\u003E results reporting includes only recognitions so it is impossible to know which recognitions correspond to which inputs.\u003C\u002Fp\u003E\\n\u003Ch3\u003EPutting it all together is the hard part\u003C\u002Fh3\u003E\\n\u003Cp\u003EI have demonstrated transformations from video to cropped frames to recognized digits. In a future post I will demonstrate how to program against this event stream to pull out events of interest.\u003C\u002Fp\u003E\"}"}</script>
+</div>
+	</body>
+</html>
